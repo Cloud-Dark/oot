@@ -7,6 +7,9 @@ All notable changes to OOT are documented here.
 ### Fixed
 - README completely rewritten: correct name ("OOT"), version badge (1.4.3), install command (clawhub install Cloud-Dark/oot), license (Apache 2.0), all skill paths corrected to oot, v1.4.x features documented.
 
+### Added
+- RTK companion support documentation — added `references/RTK.md` plus README/SKILL guidance for combining OOT (context/model optimization) with RTK (shell output compression).
+
 ## [1.4.2] - 2026-02-18
 
 ### Fixed

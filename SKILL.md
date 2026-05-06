@@ -22,6 +22,24 @@ security:
 
 Comprehensive toolkit for reducing token usage and API costs in OpenClaw deployments. Combines smart model routing, optimized heartbeat intervals, usage tracking, and multi-provider strategies.
 
+## RTK Companion Support
+
+This skill can be paired with RTK for additional savings on shell-heavy workflows.
+
+- Use OOT to reduce context size, route to cheaper models, and control session budgets.
+- Use RTK to compress verbose shell output such as `git diff`, `git status`, `rg`, and test runner output.
+
+Recommended pattern:
+
+```bash
+python3 scripts/model_router.py "review this diff and summarize failures"
+rtk git diff
+rtk cargo test
+python3 scripts/token_tracker.py check
+```
+
+See `references/RTK.md` for the companion-tool workflow.
+
 ## Quick Start
 
 **Immediate actions** (no config changes needed):
@@ -595,6 +613,7 @@ Without skill:
 
 ### References
 - `PROVIDERS.md` — Alternative AI providers, pricing, and routing strategies
+- `RTK.md` — Companion workflow for shrinking shell command output with RTK
 
 ### Assets (3 total)
 - **`HEARTBEAT.template.md`** — Drop-in optimized heartbeat template with Haiku enforcement (ENHANCED!)
