@@ -1,8 +1,8 @@
 # OOT
 
-**Reduce OpenClaw token usage and API costs by 50-80%**
+OOT is a practical OpenClaw skill for cutting token waste across day-to-day agent work.
 
-OOT is an OpenClaw skill for smart model routing, lazy context loading, optimized heartbeats, budget tracking, and native OpenClaw 2026.2.15 features such as session pruning, bootstrap size limits, and cache TTL alignment.
+It keeps sessions cheaper by reducing unnecessary context, routing simple tasks away from expensive models, tightening heartbeat behavior, and tracking budget locally. When paired with RTK, it also helps reduce the shell-output side of token waste.
 
 [![ClawHub](https://img.shields.io/badge/ClawHub-oot-blue)](https://clawhub.ai/Cloud-Dark/oot)
 [![Version](https://img.shields.io/badge/version-1.4.2-green)](https://github.com/Cloud-Dark/oot/blob/main/CHANGELOG.md)
@@ -11,45 +11,67 @@ OOT is an OpenClaw skill for smart model routing, lazy context loading, optimize
 
 ---
 
-## What OOT Reduces
+## Core Idea
 
-- Context bloat from loading too many workspace files
-- Model overspend from using expensive models on simple tasks
-- Heartbeat waste from over-frequent routine checks
-- Session cost drift through local token budget tracking
+Most token waste in agent workflows comes from two places:
 
-OOT focuses on reducing what the model sees and which model gets used.
+- too much context loaded too early
+- too much noisy tool output sent back to the model
+
+OOT focuses on the first problem directly:
+
+- recommend smaller context bundles
+- route tasks to cheaper model tiers when possible
+- reduce heartbeat churn
+- track usage against a daily budget
+
+If you also use RTK, you cover the second problem too by shrinking command output from tools like `git`, `rg`, `cargo test`, `pytest`, and log commands.
 
 ---
 
-## RTK Support
+## What You Get
 
-OOT works well with RTK.
+### Smaller Context
 
-- `OOT` reduces context, routing, heartbeat, and budget waste
-- `RTK` reduces verbose shell output before it reaches the model
+`context_optimizer.py` helps avoid loading large piles of files when the task does not need them.
 
-That split matters:
+### Smarter Model Use
 
-- Use `OOT` when the problem is too much context or the wrong model tier
-- Use `RTK` when the problem is huge shell output from `git`, `rg`, `find`, tests, logs, or build tools
+`model_router.py` classifies work and suggests a cheaper or more appropriate model tier.
 
-Example combined workflow:
+### Lower Heartbeat Cost
+
+`heartbeat_optimizer.py` reduces unnecessary checks and supports cache-TTL-aware intervals.
+
+### Budget Awareness
+
+`token_tracker.py` tracks usage locally and helps prevent runaway session cost.
+
+### Better Results with RTK
+
+For shell-heavy workflows, RTK can compress verbose command output before it reaches the model. OOT now includes companion guidance for that pattern.
+
+---
+
+## OOT + RTK
+
+OOT and RTK are complementary, not competing.
+
+- `OOT` reduces context, model, heartbeat, and budget waste
+- `RTK` reduces shell output waste
+
+Use OOT when the problem is agent-side cost discipline. Use RTK when the problem is huge command output.
+
+Typical combined flow:
 
 ```bash
-# 1. Pick an appropriate model tier
-python3 scripts/model_router.py "review this diff and summarize the failing tests"
-
-# 2. Keep shell output compact
+python3 scripts/model_router.py "review this diff and summarize failing tests"
 rtk git diff
 rtk cargo test
-rtk rg "TODO|FIXME" .
-
-# 3. Check budget impact
 python3 scripts/token_tracker.py check
 ```
 
-Recommended RTK commands for shell-heavy sessions:
+Useful RTK commands in this workflow:
 
 ```bash
 rtk git status
@@ -60,28 +82,67 @@ rtk cargo test
 rtk docker logs my-container
 ```
 
-See [references/RTK.md](references/RTK.md) for the integration guide.
+### Install RTK
+
+Homebrew:
+
+```bash
+brew install rtk
+```
+
+Linux/macOS quick install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+```
+
+Cargo:
+
+```bash
+cargo install --git https://github.com/rtk-ai/rtk
+```
+
+Verify install:
+
+```bash
+rtk --version
+rtk gain
+```
+
+If you want RTK to actively help in coding sessions, initialize it after install:
+
+```bash
+rtk init -g
+```
+
+For Codex-style usage:
+
+```bash
+rtk init -g --codex
+```
+
+More detail: [references/RTK.md](references/RTK.md)
 
 ---
 
-## Installation
+## Install
 
-### Option 1: ClawHub
+### ClawHub
 
 ```bash
 clawhub install Cloud-Dark/oot
 ```
 
-Or browse to: [clawhub.ai/Cloud-Dark/oot](https://clawhub.ai/Cloud-Dark/oot)
+Listing: [clawhub.ai/Cloud-Dark/oot](https://clawhub.ai/Cloud-Dark/oot)
 
-### Option 2: Manual Install
+### Manual
 
 ```bash
 git clone https://github.com/Cloud-Dark/oot.git \
   ~/.openclaw/skills/oot
 ```
 
-Then add this to `openclaw.json`:
+Add the skill path to `openclaw.json`:
 
 ```json
 {
@@ -93,57 +154,78 @@ Then add this to `openclaw.json`:
 }
 ```
 
-### One-Line Install Prompt
+One-line prompt:
 
 > "Install the OOT skill from https://clawhub.ai/Cloud-Dark/oot or, if ClawHub isn't available, clone https://github.com/Cloud-Dark/oot and add the path to skills.load.extraDirs in openclaw.json"
 
 ---
 
-## Quick Start
+## Quick Usage
 
-### 1. Recommend a smaller context set
+Recommend context:
 
 ```bash
-python3 scripts/context_optimizer.py recommend "hi, how are you?"
+python3 scripts/context_optimizer.py recommend "debug this error"
 ```
 
-### 2. Route the task to the right model tier
+Route a task:
 
 ```bash
-python3 scripts/model_router.py "design a microservices architecture"
+python3 scripts/model_router.py "design a service architecture"
 python3 scripts/model_router.py "thanks!"
 ```
 
-### 3. Install the optimized heartbeat
+Install heartbeat template:
 
 ```bash
 cp assets/HEARTBEAT.template.md ~/.openclaw/workspace/HEARTBEAT.md
 python3 scripts/heartbeat_optimizer.py plan
 ```
 
-### 4. Check current token budget
+Check budget:
 
 ```bash
 python3 scripts/token_tracker.py check
 ```
 
-### 5. Align heartbeat with Anthropic cache TTL
+Check whether RTK is a good fit for a task:
 
 ```bash
-python3 scripts/heartbeat_optimizer.py cache-ttl
+python3 scripts/token_tracker.py rtk "git diff and cargo test"
+```
+
+Show RTK companion guidance from the wrapper:
+
+```bash
+./scripts/optimize.sh rtk
 ```
 
 ---
 
-## Native OpenClaw Features
+## Built for Real Agent Work
 
-OOT documents and complements native OpenClaw 2026.2.15 features:
+OOT is useful when:
 
-- `contextPruning` for cache-TTL-based session pruning
-- `bootstrapMaxChars` and `bootstrapTotalMaxChars` for bootstrap size limits
-- `cacheRetention: "long"` for Opus cache retention
+- your workspace injects too many files by default
+- agents spend too much time on expensive models
+- heartbeat sessions happen too often
+- shell-heavy coding sessions inflate token usage
+- you want local budget visibility without external services
 
-Useful built-in diagnostics:
+It is especially effective in OpenClaw setups that mix normal chat, coding tasks, and routine monitoring flows.
+
+---
+
+## Native OpenClaw Alignment
+
+OOT is designed to work well with modern OpenClaw capabilities such as:
+
+- context pruning
+- bootstrap size limits
+- cache retention tuning
+- built-in usage diagnostics
+
+Useful built-ins:
 
 ```text
 /context list
@@ -153,23 +235,11 @@ Useful built-in diagnostics:
 /status
 ```
 
----
-
-## Recommended Strategy
-
-For the best savings:
-
-1. Use `context_optimizer.py` to avoid injecting unnecessary files.
-2. Use `model_router.py` to keep simple tasks off expensive models.
-3. Use `heartbeat_optimizer.py` to avoid idle cache rewrite waste.
-4. Use `token_tracker.py` to enforce cost discipline.
-5. Use `RTK` for noisy shell commands so large outputs stay compact.
-
-OOT reduces context and model waste. RTK reduces tool-output waste. Together they cover both major token sinks.
+OOT does not replace those features. It helps you use them more effectively and fills the gaps with local scripts.
 
 ---
 
-## Skill Structure
+## Files
 
 ```text
 oot/
@@ -183,13 +253,28 @@ oot/
 `-- references/
 ```
 
+Important pieces:
+
+- `scripts/context_optimizer.py`
+- `scripts/model_router.py`
+- `scripts/heartbeat_optimizer.py`
+- `scripts/token_tracker.py`
+- `scripts/optimize.sh`
+- `references/RTK.md`
+
 ---
 
-## Security
+## Safety
 
-All executable scripts are local-only with no network calls, no subprocess spawning, and no system modifications. See [SECURITY.md](SECURITY.md) for the full audit.
+The executable scripts in this repository are local-only.
 
-Verify integrity:
+- no network requests
+- no subprocess spawning from the Python tools
+- no system modification outside their intended local files
+
+Full audit: [SECURITY.md](SECURITY.md)
+
+Integrity check:
 
 ```bash
 cd ~/.openclaw/skills/oot

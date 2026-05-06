@@ -7,6 +7,49 @@ RTK and OOT solve different parts of the same token-cost problem:
 
 Used together, they compound well.
 
+## Install RTK
+
+### Homebrew
+
+```bash
+brew install rtk
+```
+
+### Linux/macOS Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+```
+
+### Cargo
+
+```bash
+cargo install --git https://github.com/rtk-ai/rtk
+```
+
+### Verify
+
+```bash
+rtk --version
+rtk gain
+```
+
+### Initialize
+
+For a general global setup:
+
+```bash
+rtk init -g
+```
+
+For Codex-oriented workflows:
+
+```bash
+rtk init -g --codex
+```
+
+If you are on native Windows, RTK can still be used explicitly, but its shell-hook experience is more limited than on Linux/macOS or WSL.
+
 ## When to Use RTK
 
 Use RTK when your agent frequently runs verbose shell commands such as:
