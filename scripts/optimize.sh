@@ -1,18 +1,31 @@
 #!/bin/bash
-# optimize.sh - Quick CLI wrapper for token optimization tools
-#
-# Usage:
-#   ./optimize.sh route "your prompt here"    # Route to appropriate model
-#   ./optimize.sh context                      # Generate optimized AGENTS.md
-#   ./optimize.sh recommend "prompt"           # Recommend context files
-#   ./optimize.sh budget                       # Check token budget
-#   ./optimize.sh heartbeat                    # Install optimized heartbeat
-#
-# Examples:
-#   ./optimize.sh route "thanks!"              # → cheap tier (Haiku)
-#   ./optimize.sh route "design an API"        # → smart tier (Opus)
+# optimize.sh - Quick CLI wrapper for OOT tools and RTK companion guidance
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+print_rtk_help() {
+    echo "RTK Companion Support"
+    echo ""
+    echo "Use OOT for context, model, heartbeat, and budget optimization."
+    echo "Use RTK for large shell outputs such as git diff, rg, tests, and logs."
+    echo ""
+    echo "Recommended RTK commands:"
+    echo "  rtk git status"
+    echo "  rtk git diff"
+    echo "  rtk rg 'pattern' ."
+    echo "  rtk cargo test"
+    echo "  rtk pytest"
+    echo "  rtk docker logs <container>"
+}
+
+rtk_wrap_command() {
+    shift
+    if [ $# -eq 0 ]; then
+        echo "Usage: ./optimize.sh rtk-wrap <command> [args]"
+        exit 1
+    fi
+    echo "rtk $*"
+}
 
 case "$1" in
     route|model)
@@ -32,7 +45,7 @@ case "$1" in
     heartbeat|hb)
         DEST="${HOME}/.openclaw/workspace/HEARTBEAT.md"
         cp "$SCRIPT_DIR/../assets/HEARTBEAT.template.md" "$DEST"
-        echo "✅ Installed optimized heartbeat to: $DEST"
+        echo "Installed optimized heartbeat to: $DEST"
         ;;
     providers)
         python3 "$SCRIPT_DIR/model_router.py" providers
@@ -40,8 +53,14 @@ case "$1" in
     detect)
         python3 "$SCRIPT_DIR/model_router.py" detect
         ;;
+    rtk)
+        print_rtk_help
+        ;;
+    rtk-wrap|wrap-rtk)
+        rtk_wrap_command "$@"
+        ;;
     help|--help|-h|"")
-        echo "Token Optimizer CLI"
+        echo "OOT CLI"
         echo ""
         echo "Usage: ./optimize.sh <command> [args]"
         echo ""
@@ -53,11 +72,15 @@ case "$1" in
         echo "  heartbeat           Install optimized heartbeat"
         echo "  providers           List available providers"
         echo "  detect              Show auto-detected provider"
+        echo "  rtk                 Show RTK companion guidance"
+        echo "  rtk-wrap <cmd>      Print RTK-wrapped form of a shell command"
         echo ""
         echo "Examples:"
-        echo "  ./optimize.sh route 'thanks!'           # → cheap tier"
-        echo "  ./optimize.sh route 'design an API'     # → smart tier"
-        echo "  ./optimize.sh budget                    # → current usage"
+        echo "  ./optimize.sh route 'thanks!'"
+        echo "  ./optimize.sh route 'design an API'"
+        echo "  ./optimize.sh budget"
+        echo "  ./optimize.sh rtk"
+        echo "  ./optimize.sh rtk-wrap git diff"
         ;;
     *)
         echo "Unknown command: $1"

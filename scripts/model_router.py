@@ -123,6 +123,13 @@ BACKGROUND_TASK_PATTERNS = [
     r'process\s+(csv|json|xml|yaml)',
 ]
 
+RTK_COMMAND_PATTERNS = [
+    r'\bgit\s+(status|diff|log|show)\b',
+    r'\b(rg|grep|find|ls|tree)\b',
+    r'\b(cargo\s+test|pytest|npm\s+test|pnpm\s+test|go\s+test|vitest|jest)\b',
+    r'\b(docker\s+logs|kubectl\s+logs)\b',
+]
+
 # Model routing rules with tier-based approach
 ROUTING_RULES = {
     "cheap": {
@@ -300,6 +307,8 @@ def route_task(prompt, current_model=None, force_tier=None, provider=None):
         tier, confidence, reasoning = classify_task(prompt)
     
     recommended_model = get_model_for_tier(tier, provider)
+    prompt_lower = prompt.lower()
+    rtk_applicable = any(re.search(pattern, prompt_lower) for pattern in RTK_COMMAND_PATTERNS)
     
     # Calculate cost savings
     provider_config = PROVIDER_MODELS.get(provider, PROVIDER_MODELS["anthropic"])
@@ -322,6 +331,8 @@ def route_task(prompt, current_model=None, force_tier=None, provider=None):
         "reasoning": reasoning,
         "cost_savings_percent": max(0, cost_savings),
         "should_switch": recommended_model != current_model,
+        "rtk_recommended": rtk_applicable,
+        "rtk_reason": "Prompt looks shell-output-heavy; use RTK-wrapped commands for better compression" if rtk_applicable else None,
         "all_providers": {
             p: get_model_for_tier(tier, p) for p in PROVIDER_MODELS.keys()
         }

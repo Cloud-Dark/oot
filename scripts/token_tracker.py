@@ -5,6 +5,7 @@ Monitors API usage and warns when approaching limits.
 """
 import json
 import os
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -121,12 +122,29 @@ def suggest_cheaper_model(current_model, task_type="general"):
         "suggestions": suggestions.get(task_type, suggestions["general"])
     }
 
+def recommend_output_reducer(task_text=""):
+    """Recommend RTK when the task will likely produce large shell output."""
+    task_lower = task_text.lower()
+    patterns = [
+        r'\bgit\s+(status|diff|log|show)\b',
+        r'\b(rg|grep|find|ls|tree)\b',
+        r'\b(cargo\s+test|pytest|npm\s+test|pnpm\s+test|go\s+test|vitest|jest)\b',
+        r'\b(docker\s+logs|kubectl\s+logs)\b',
+    ]
+    matched = any(re.search(pattern, task_lower) for pattern in patterns)
+    return {
+        "task": task_text,
+        "rtk_recommended": matched,
+        "tool": "rtk" if matched else None,
+        "reason": "Large shell output is likely; RTK can compress the command output before it reaches the model" if matched else "No obvious shell-output-heavy pattern detected"
+    }
+
 def main():
     """CLI interface for token tracker."""
     import sys
     
     if len(sys.argv) < 2:
-        print("Usage: token_tracker.py [check|suggest|reset]")
+        print("Usage: token_tracker.py [check|suggest|rtk|reset]")
         sys.exit(1)
     
     command = sys.argv[1]
@@ -139,6 +157,11 @@ def main():
         task = sys.argv[2] if len(sys.argv) > 2 else "general"
         current = sys.argv[3] if len(sys.argv) > 3 else "anthropic/claude-sonnet-4-5"
         result = suggest_cheaper_model(current, task)
+        print(json.dumps(result, indent=2))
+
+    elif command == "rtk":
+        task = " ".join(sys.argv[2:]) if len(sys.argv) > 2 else ""
+        result = recommend_output_reducer(task)
         print(json.dumps(result, indent=2))
     
     elif command == "reset":
