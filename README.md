@@ -6,7 +6,7 @@ It keeps sessions cheaper by reducing unnecessary context, routing simple tasks 
 
 [![ClawHub](https://img.shields.io/badge/ClawHub-oot-blue)](https://clawhub.ai/Cloud-Dark/oot)
 [![Version](https://img.shields.io/badge/version-1.4.2-green)](https://github.com/Cloud-Dark/oot/blob/main/CHANGELOG.md)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: MIT--0](https://img.shields.io/badge/License-MIT--0-yellow.svg)](https://opensource.org/license/mit-0/)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-purple)](https://openclaw.ai)
 
 ---
@@ -289,5 +289,5 @@ sha256sum -c .clawhubsafe
 - **GitHub:** https://github.com/Cloud-Dark/oot
 - **OpenClaw Docs:** https://docs.openclaw.ai
 - **RTK Guide:** [references/RTK.md](references/RTK.md)
-- **License:** Apache 2.0
+- **License:** MIT-0
 - **Author:** [Cloud-Dark](https://github.com/Cloud-Dark)

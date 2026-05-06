@@ -267,7 +267,7 @@ This skill is maintained by **Cloud-Dark**. All source code is publicly auditabl
 - **GitHub repository:** https://github.com/Cloud-Dark/oot
 - **ClawHub listing:** https://clawhub.ai/Cloud-Dark/oot
 - **Author:** Cloud-Dark
-- **License:** Apache 2.0
+- **License:** MIT-0
 
 Every file in this skill bundle is listed in `.clawhubsafe` with its SHA256 checksum. Verify integrity at any time:
 ```bash
@@ -281,7 +281,7 @@ The README references the GitHub repo for users who want to review the source be
 
 ## License & Attribution
 
-- **License**: Apache 2.0
+- **License**: MIT-0
 - **Author**: Cloud-Dark
 - **Repository**: https://github.com/Cloud-Dark/oot
 - **ClawHub**: https://clawhub.ai/Cloud-Dark/oot
